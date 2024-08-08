@@ -13,7 +13,7 @@ def read_adc(channel):
     data = ((adc[1] & 3) << 8) + adc[2]
     return data
 
-def convert_to_voltage(adc_value, vref=3.3):
+def convert_to_voltage(adc_value, vref=5):
     return (adc_value / 1023.0) * vref
 
 try:
