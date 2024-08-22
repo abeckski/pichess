@@ -1,6 +1,20 @@
 from stockfish import Stockfish
 import asyncio
 import random
+import spidev
+import numpy as np
+import RPi.GPIO as GPIO
+import time
+
+# Initialize SPI
+spi = spidev.SpiDev()
+spi.open(0, 0)  # Open SPI bus 0, device 0
+spi.max_speed_hz = 1350000
+
+# Set GPIO output pins
+pins = [1, 2, 3, 4]
+letters = ["A", "B", "C", "D", "E", "F", "G", "H"]
+threshold = 0.1 #Volts
 
 def evaluate_move(old_eval, new_eval):
     good_moves = ['Well Done!', 'Beast Mooooode', 'Okay Magnus', 'Youre going Kasparov Mode :O', 'ok i see u', '$wag Mone¥', 'Good Job!']
@@ -26,6 +40,44 @@ def input_to_bool(input_string):
         return True
     else: return False
 
+def binary(input):
+    return [int(input/8), int((input%8)/4), int((input%4)/2), int(input%2)]
+
+def read_adc(channel):
+    if channel < 0 or channel > 7:
+        raise ValueError("ADC channel must be between 0 and 7")
+    adc = spi.xfer2([1, (8 + channel) << 4, 0])
+    data = ((adc[1] & 3) << 8) + adc[2]
+    return data
+
+def convert_to_voltage(adc_value, vref=3.3):
+    return (adc_value / 1023.0) * vref
+
+def find_current_position():
+    position = np.zeros([8,8])
+    
+    # Set the GPIO pins to choose the multiplexer input
+    for i in range(16):
+        pin_values = binary(i)
+        for p, pin in enumerate(pins):
+            if pin_values[p]:
+                GPIO.output(pin, GPIO.HIGH)
+            else: GPIO.output(pin, GPIO.LOW)
+    
+        time.sleep(0.01)
+        for j in range(4):
+            value = convert_to_voltage(read_adc(j))
+            position[i%8, int(i/8) + j*2] = (value > 2.5+threshold) - (value < 2.5-threshold)
+
+    return position
+
+def find_move(old_position):
+    new_position = find_current_position()
+    diff = old_position - new_position
+    if abs(diff).sum() == 0:
+        print("Try moving a piece next time...")
+    
+
 def main():
     stockfish = Stockfish("/usr/games/stockfish", depth=8)
     pvc = input_to_bool(input("Play vs Computer? (y/n): "))
@@ -42,6 +94,11 @@ def main():
     stockfish.set_position(moves)
     evalutation = stockfish.get_evaluation()
     move_num = 0
+
+    # Use BCM numbering (the Broadcom SoC channel numbering)
+    GPIO.setmode(GPIO.BCM)
+    for i in range(4):
+        GPIO.setup(pins[i], GPIO.OUT)
     
     while True: #Keep playing until there are no moves available
         #make a move
