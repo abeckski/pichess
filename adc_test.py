@@ -41,7 +41,7 @@ def convert_to_voltage(adc_value, vref=5):
     return (adc_value / 1023.0) * vref
 
 try:
-    pin_values = binary(0)
+    pin_values = binary(1)
     # for p, pin in enumerate(pins):
     #     setup_gpio(pin)
     #     set_gpio_value(pin, pin_values[p])
