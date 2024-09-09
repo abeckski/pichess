@@ -1,10 +1,14 @@
 import spidev
 import time
+import RPi.GPIO as GPIO
 
 # Initialize SPI
 spi = spidev.SpiDev()
 spi.open(0, 0)  # Open SPI bus 0, device 0
 spi.max_speed_hz = 1350000
+
+def binary(input):
+    return [int(input/8), int((input%8)/4), int((input%4)/2), int(input%2)]
 
 def read_adc(channel):
     if channel < 0 or channel > 7:
