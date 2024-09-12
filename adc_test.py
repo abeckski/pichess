@@ -10,7 +10,7 @@ spi.max_speed_hz = 1350000
 
 #choose GPIO pins to use
 pins = [17, 27, 22, 23]
-sensor_mapping = []
+sensor_mapping = [0,8,2,10,4,12,6,14,15,7,13,5,11,3,9,1]
 threshold = 0.1
 
 GPIO.setmode(GPIO.BCM)
@@ -52,7 +52,8 @@ try:
     while True:
         sensor_readings = np.zeros((8,2))
         for i in range(16):
-            pin_values = binary(i)
+            s = sensor_mapping[i]
+            pin_values = binary(s)
             for p, pin in enumerate(pins):
                 if pin_values[p]: GPIO.output(pin, GPIO.HIGH)
                 else: GPIO.output(pin, GPIO.LOW)
