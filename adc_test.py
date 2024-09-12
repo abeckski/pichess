@@ -1,6 +1,6 @@
 import spidev
 import time
-import gpiod
+import RPi.GPIO as GPIO
 
 # Initialize SPI
 spi = spidev.SpiDev()
