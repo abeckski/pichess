@@ -10,6 +10,9 @@ spi.max_speed_hz = 1350000
 #choose GPIO pins to use
 pins = [17, 27, 22, 23]
 
+for pin in pins:
+    GPIO.setup(pin, GPIO.OUT)
+
 # def setup_gpio(pin):
 #     """Export and set GPIO pin direction."""
 #     with open("/sys/class/gpio/export", "w") as f:
@@ -27,6 +30,8 @@ pins = [17, 27, 22, 23]
 #     with open("/sys/class/gpio/unexport", "w") as f:
 #         f.write(str(pin))
 
+
+
 def binary(input):
     return [int(input/8), int((input%8)/4), int((input%4)/2), int(input%2)]
 
@@ -37,22 +42,31 @@ def read_adc(channel):
     data = ((adc[1] & 3) << 8) + adc[2]
     return data
 
-def convert_to_voltage(adc_value, vref=5):
+def convert_to_voltage(adc_value, vref=3.3):
     return (adc_value / 1023.0) * vref
 
 try:
-    pin_values = binary(1)
     # for p, pin in enumerate(pins):
     #     setup_gpio(pin)
     #     set_gpio_value(pin, pin_values[p])
     while True:
-        adc_value = read_adc(0)  # Read from channel 0
-        voltage = convert_to_voltage(adc_value)
-        print(f"ADC Value: {adc_value}, Voltage: {voltage:.2f}V")
+        sensor_readings = np.zeros(8,2)
+        for i in range(16):
+            pin_values = binary(i)
+            for pin in pins:
+                if pin: GPIO.output(pin, GPIO.HIGH)
+                else: GPIO.output(pin, GPIO.LOW)
+            time.sleep(0.1)
+            sensor_readings[i%8, int(i/8)] = convert_to_voltage(read_adc(0))
+        print(sensor_readings)
+        time.sleep(3)
+        # adc_value = read_adc(0)  # Read from channel 0
+        # voltage = convert_to_voltage(adc_value)
+        # print(f"ADC Value: {adc_value}, Voltage: {voltage:.2f}V")
         time.sleep(1)
 except KeyboardInterrupt:
     print("Exiting program")
 finally:
-    spi.close()
+    GPIO.cleanup()
     # for pin in pins:
     #     cleanup_gpio(pin)
