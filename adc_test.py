@@ -57,11 +57,11 @@ try:
             time.sleep(0.1)
             sensor_readings[i%8, int(i/8)] = convert_to_voltage(read_adc(0))
         print(sensor_readings)
-        time.sleep(3)
-        adc_value = read_adc(0)  # Read from channel 0
-        voltage = convert_to_voltage(adc_value)
-        print(f"ADC Value: {adc_value}, Voltage: {voltage:.2f}V")
-        time.sleep(1)
+        time.sleep(2)
+        # adc_value = read_adc(0)  # Read from channel 0
+        # voltage = convert_to_voltage(adc_value)
+        # print(f"ADC Value: {adc_value}, Voltage: {voltage:.2f}V")
+        # time.sleep(1)
 except KeyboardInterrupt:
     print("Exiting program")
 finally:
