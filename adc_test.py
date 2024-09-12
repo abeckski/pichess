@@ -50,7 +50,7 @@ try:
     #     setup_gpio(pin)
     #     set_gpio_value(pin, pin_values[p])
     while True:
-        sensor_readings = np.zeros(8,2)
+        sensor_readings = np.zeros((8,2))
         for i in range(16):
             pin_values = binary(i)
             for pin in pins:
