@@ -10,6 +10,7 @@ spi.max_speed_hz = 1350000
 #choose GPIO pins to use
 pins = [17, 27, 22, 23]
 
+GPIO.setmode(GPIO.BCM)
 for pin in pins:
     GPIO.setup(pin, GPIO.OUT)
 
@@ -29,8 +30,6 @@ for pin in pins:
 #     """Unexport GPIO pin."""
 #     with open("/sys/class/gpio/unexport", "w") as f:
 #         f.write(str(pin))
-
-
 
 def binary(input):
     return [int(input/8), int((input%8)/4), int((input%4)/2), int(input%2)]
