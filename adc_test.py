@@ -10,6 +10,8 @@ spi.max_speed_hz = 1350000
 
 #choose GPIO pins to use
 pins = [17, 27, 22, 23]
+sensor_mapping = []
+threshold = 0.1
 
 GPIO.setmode(GPIO.BCM)
 for pin in pins:
@@ -55,7 +57,8 @@ try:
                 if pin_values[p]: GPIO.output(pin, GPIO.HIGH)
                 else: GPIO.output(pin, GPIO.LOW)
             time.sleep(0.1)
-            sensor_readings[i%8, int(i/8)] = convert_to_voltage(read_adc(0))
+            value = convert_to_voltage(read_adc(0))
+            sensor_readings[i%8, int(i/8)] = (value > 2.5+threshold) - (value < 2.5-threshold)
         print(sensor_readings)
         time.sleep(2)
         # adc_value = read_adc(0)  # Read from channel 0
