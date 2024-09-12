@@ -46,23 +46,21 @@ def convert_to_voltage(adc_value, vref=3.3):
     return (adc_value / 1023.0) * vref
 
 try:
-    # for p, pin in enumerate(pins):
-    #     setup_gpio(pin)
-    #     set_gpio_value(pin, pin_values[p])
+
     while True:
         sensor_readings = np.zeros((8,2))
         for i in range(16):
             pin_values = binary(i)
-            for pin in pins:
-                if pin: GPIO.output(pin, GPIO.HIGH)
+            for p, pin in enumerate(pins):
+                if pin_values[p]: GPIO.output(pin, GPIO.HIGH)
                 else: GPIO.output(pin, GPIO.LOW)
             time.sleep(0.1)
             sensor_readings[i%8, int(i/8)] = convert_to_voltage(read_adc(0))
         print(sensor_readings)
         time.sleep(3)
-        # adc_value = read_adc(0)  # Read from channel 0
-        # voltage = convert_to_voltage(adc_value)
-        # print(f"ADC Value: {adc_value}, Voltage: {voltage:.2f}V")
+        adc_value = read_adc(0)  # Read from channel 0
+        voltage = convert_to_voltage(adc_value)
+        print(f"ADC Value: {adc_value}, Voltage: {voltage:.2f}V")
         time.sleep(1)
 except KeyboardInterrupt:
     print("Exiting program")
