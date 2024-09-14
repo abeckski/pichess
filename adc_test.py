@@ -57,7 +57,7 @@ try:
             for p, pin in enumerate(pins):
                 if pin_values[p]: GPIO.output(pin, GPIO.HIGH)
                 else: GPIO.output(pin, GPIO.LOW)
-            time.sleep(0.1)
+            time.sleep(0.01)
             value = convert_to_voltage(read_adc(0))
             sensor_readings[i%8, int(i/8)] = (value > 2.5+threshold) - (value < 2.5-threshold)
         print(sensor_readings)
