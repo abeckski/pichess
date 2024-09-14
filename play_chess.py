@@ -12,9 +12,16 @@ spi.open(0, 0)  # Open SPI bus 0, device 0
 spi.max_speed_hz = 1350000
 
 # Set GPIO output pins
-pins = [1, 2, 3, 4]
+#choose GPIO pins to use
+pins = [17, 27, 22, 23]
+sensor_mapping = [0,8,2,10,4,12,6,14,15,7,13,5,11,3,9,1]
 letters = ["A", "B", "C", "D", "E", "F", "G", "H"]
 threshold = 0.1 #Volts
+
+#Setup GPIO pins
+GPIO.setmode(GPIO.BCM)
+for pin in pins:
+    GPIO.setup(pin, GPIO.OUT)
 
 def evaluate_move(old_eval, new_eval):
     good_moves = ['Well Done!', 'Beast Mooooode', 'Okay Magnus', 'Youre going Kasparov Mode :O', 'ok i see u', '$wag Mone¥', 'Good Job!']
@@ -64,7 +71,7 @@ def find_current_position():
                 GPIO.output(pin, GPIO.HIGH)
             else: GPIO.output(pin, GPIO.LOW)
     
-        time.sleep(0.01)
+        time.sleep(0.1)
         for j in range(4):
             value = convert_to_voltage(read_adc(j))
             position[i%8, int(i/8) + j*2] = (value > 2.5+threshold) - (value < 2.5-threshold)
