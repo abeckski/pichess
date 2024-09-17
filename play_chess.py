@@ -38,25 +38,37 @@ starting_position = np.array([[-1,-1,-1,-1,-1,-1,-1,-1],
                              [ 1, 1, 1, 1, 1, 1, 1, 1],
                              [ 1, 1, 1, 1, 1, 1, 1, 1]])
 
+def lcd_display(message, row=0):
+    if type(message) is not type('e'): 
+        print('Wrong data type for LCD display :(')
+        return
+    i = 0
+    while i < int(len(message)/20):
+        LCD2004.write(0, i+row, message[i*20:(i+1)*20])
+        i += 1
+    len_remaining = len(message) - i*20
+    if len_remaining > 0:
+        LCD2004.write(int((20-len_remaining)/2), i+1+row, message[i*20:])
+
 def evaluate_move(old_eval, new_eval):
     '''Print a roast or a compliment depending on how stockfish likes your move'''
     good_moves = ['Well Done!', 'Beast Mooooode', 'Okay Magnus', 'Youre going Kasparov Mode :O', 'ok i see u', '$wag Mone¥', 'Good Job!']
     okay_moves = ['Ight.', 'word', 'kinda mid but ok', 'dece', 'Ive seen worse', 'not bad']
-    bad_moves = ['B-B-B-BLUNDERRRR', 'oh brother this guy stinks', 'get gud lmaooo', 'YEEESH', 'All Aboard the BLUNDERBUS', 'oh lord...', 'Jesus save your soul']
+    bad_moves = ['B-B-B-BLUNDERRRR', 'oh brother this guy stinks', 'get gud lmaooo', 'YEEESH', 'All Aboard the      BLUNDERBUS', 'oh lord...', 'Jesus save your soul']
     loss_moves = ['RIPPP', 'gg buddy', 'aaaand you lost lmao', 'Sold the game after all that work?']
-    missed_win_moves = ['you let victory slip right through your fingers like the fine sand of the Sahara', 'Im not mad Im just disappointed', 'you missed the win :(']
+    missed_win_moves = ['you let victory slipthrough your fingerslike the fine sand  of the Sahara', 'Im not mad Im just  disappointed', 'you missed the win  :(']
     if (new_eval['type'] == "cp") and (old_eval['type'] == 'cp'):
         diff = abs(float(old_eval['value']) - float(new_eval['value']))
-        if diff < 30: print(random.choice(good_moves))
-        elif diff < 140: print(random.choice(okay_moves))
-        else: print(random.choice(bad_moves))
+        if diff < 30: lcd_display(random.choice(good_moves))
+        elif diff < 140: lcd_display(random.choice(okay_moves))
+        else: lcd_display(random.choice(bad_moves))
     if (new_eval['type'] == "mate") and (old_eval['type'] == "cp"):
-        print(random.choice(loss_moves))
+        lcd_display(random.choice(loss_moves))
     if (new_eval['type'] == "cp") and (old_eval['type'] == "mate"):
-        print(random.choice(missed_win_moves))
+        lcd_display(random.choice(missed_win_moves))
     if (new_eval['type'] == "mate") and (old_eval['type'] == "mate"):
-        if abs(new_eval['value']) < abs(old_eval['value']): print(random.choice(good_moves))
-        else: print(random.choice(okay_moves))
+        if abs(new_eval['value']) < abs(old_eval['value']): lcd_display(random.choice(good_moves))
+        else: lcd_display(random.choice(okay_moves))
 
 def input_to_bool(input_string):
     if (input_string == 'y') | (input_string == 'Y') | (input_string == 'Yes') | (input_string == 'yes'):
