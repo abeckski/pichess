@@ -17,23 +17,6 @@ GPIO.setmode(GPIO.BCM)
 for pin in pins:
     GPIO.setup(pin, GPIO.OUT)
 
-# def setup_gpio(pin):
-#     """Export and set GPIO pin direction."""
-#     with open("/sys/class/gpio/export", "w") as f:
-#         f.write(str(pin))
-#     with open(f"/sys/class/gpio/gpio{pin}/direction", "w") as f:
-#         f.write("out")
-
-# def set_gpio_value(pin, value):
-#     """Set GPIO pin to high (1) or low (0)."""
-#     with open(f"/sys/class/gpio/gpio{pin}/value", "w") as f:
-#         f.write(str(value))
-
-# def cleanup_gpio(pin):
-#     """Unexport GPIO pin."""
-#     with open("/sys/class/gpio/unexport", "w") as f:
-#         f.write(str(pin))
-
 def binary(input):
     return [int(input/8), int((input%8)/4), int((input%4)/2), int(input%2)]
 

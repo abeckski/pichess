@@ -15,13 +15,22 @@ spi.max_speed_hz = 1350000
 #choose GPIO pins to use
 pins = [17, 27, 22, 23]
 sensor_mapping = [0,8,2,10,4,12,6,14,15,7,13,5,11,3,9,1]
-letters = ["A", "B", "C", "D", "E", "F", "G", "H"]
+letters = ["a", "b", "c", "d", "e", "f", "g", "h"]
 threshold = 0.1 #Volts
 
 #Setup GPIO pins
 GPIO.setmode(GPIO.BCM)
 for pin in pins:
     GPIO.setup(pin, GPIO.OUT)
+
+starting_position = np.array([[-1,-1,-1,-1,-1,-1,-1,-1],
+                             [-1,-1,-1,-1,-1,-1,-1,-1],
+                             [ 0, 0, 0, 0, 0, 0, 0, 0],
+                             [ 0, 0, 0, 0, 0, 0, 0, 0],
+                             [ 0, 0, 0, 0, 0, 0, 0, 0],
+                             [ 0, 0, 0, 0, 0, 0, 0, 0],
+                             [ 1, 1, 1, 1, 1, 1, 1, 1],
+                             [ 1, 1, 1, 1, 1, 1, 1, 1]])
 
 def evaluate_move(old_eval, new_eval):
     good_moves = ['Well Done!', 'Beast Mooooode', 'Okay Magnus', 'Youre going Kasparov Mode :O', 'ok i see u', '$wag Mone¥', 'Good Job!']
@@ -71,7 +80,7 @@ def find_current_position():
                 GPIO.output(pin, GPIO.HIGH)
             else: GPIO.output(pin, GPIO.LOW)
     
-        time.sleep(0.1)
+        time.sleep(0.01)
         for j in range(4):
             value = convert_to_voltage(read_adc(j))
             position[i%8, int(i/8) + j*2] = (value > 2.5+threshold) - (value < 2.5-threshold)
@@ -79,11 +88,18 @@ def find_current_position():
     return position
 
 def find_move(old_position):
+    possible_moves = []
     new_position = find_current_position()
     diff = old_position - new_position
+    r, c = np.nonzero(diff)
+    for i in range(len(c)):
+        if new_position[r[i], c[i]] == 0:
+            for j in range(len(c)):
+                if new_position[r[j], c[j]] != 0:
+                    possible_moves.append(letters[c[i]]+str(r[i]+1)+letters[c[j]]+str(r[j]+1))
     if abs(diff).sum() == 0:
         print("Try moving a piece next time...")
-    
+    return possible_moves
 
 def main():
     stockfish = Stockfish("/usr/games/stockfish", depth=8)
@@ -101,11 +117,6 @@ def main():
     stockfish.set_position(moves)
     evalutation = stockfish.get_evaluation()
     move_num = 0
-
-    # Use BCM numbering (the Broadcom SoC channel numbering)
-    GPIO.setmode(GPIO.BCM)
-    for i in range(4):
-        GPIO.setup(pins[i], GPIO.OUT)
     
     while True: #Keep playing until there are no moves available
         #make a move
