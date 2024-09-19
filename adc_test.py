@@ -30,28 +30,35 @@ def read_adc(channel):
 def convert_to_voltage(adc_value, vref=3.3):
     return (adc_value / 1023.0) * vref
 
-try:
 
-    while True:
-        sensor_readings = np.zeros((8,2))
-        for i in range(16):
-            s = sensor_mapping[i]
-            pin_values = binary(s)
-            for p, pin in enumerate(pins):
-                if pin_values[p]: GPIO.output(pin, GPIO.HIGH)
-                else: GPIO.output(pin, GPIO.LOW)
-            time.sleep(0.01)
-            value = convert_to_voltage(read_adc(0))
-            sensor_readings[i%8, int(i/8)] = (value > 2.5+threshold) - (value < 2.5-threshold)
-        print(sensor_readings)
-        time.sleep(2)
-        # adc_value = read_adc(0)  # Read from channel 0
-        # voltage = convert_to_voltage(adc_value)
-        # print(f"ADC Value: {adc_value}, Voltage: {voltage:.2f}V")
-        # time.sleep(1)
-except KeyboardInterrupt:
-    print("Exiting program")
-finally:
-    GPIO.cleanup()
-    # for pin in pins:
-    #     cleanup_gpio(pin)
+def main():
+    try:
+        num_pcbs = int(input("How many sensor boards u wanna test?"))
+        while True:
+            sensor_readings = np.zeros((8,2*num_pcbs))
+            for i in range(16):
+                s = sensor_mapping[i]
+                pin_values = binary(s)
+                for p, pin in enumerate(pins):
+                    if pin_values[p]: GPIO.output(pin, GPIO.HIGH)
+                    else: GPIO.output(pin, GPIO.LOW)
+                time.sleep(0.01)
+                for j in range(num_pcbs):
+                    value = convert_to_voltage(read_adc(j))
+                    sensor_readings[i%8, int(i/8)+2*j] = (value > 2.5+threshold) - (value < 2.5-threshold)
+            print(sensor_readings)
+            #time.sleep(2)
+            input("Press Enter to read again")
+            # adc_value = read_adc(0)  # Read from channel 0
+            # voltage = convert_to_voltage(adc_value)
+            # print(f"ADC Value: {adc_value}, Voltage: {voltage:.2f}V")
+            # time.sleep(1)
+    except KeyboardInterrupt:
+        print("Exiting program")
+    finally:
+        GPIO.cleanup()
+        # for pin in pins:
+        #     cleanup_gpio(pin)
+
+if __name__ == "__main__":
+    main()
