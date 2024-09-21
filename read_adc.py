@@ -28,8 +28,8 @@ def main():
         count=0
         while True:
             if count%2 == 0:
-                GPIO.output(17, GPIO.HIGH)
-            else: GPIO.output(17, GPIO.LOW)
+                GPIO.output(27, GPIO.HIGH)
+            else: GPIO.output(27, GPIO.LOW)
             time.sleep(0.25)
             print(convert_to_voltage(read_adc(j)))
             count += 1
