@@ -1,6 +1,11 @@
 import spidev
 import time
 import numpy as np
+import RPi.GPIO as GPIO
+
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(17, GPIO.OUT)
 
 # Initialize SPI
 spi = spidev.SpiDev()
@@ -18,7 +23,20 @@ def convert_to_voltage(adc_value, vref=3.3):
     return (adc_value / 1023.0) * vref
 
 def main():
-    j = input("Which ADC input?")
-    while True:
-        print(convert_to_voltage(read_adc(j)))
-        time.sleep(0.25)
+    try:
+        j = input("Which ADC input?")
+        count=0
+        while True:
+            if count%2 == 0:
+                GPIO.output(17, GPIO.HIGH)
+            else: GPIO.output(17, GPIO.LOW)
+            time.sleep(0.25)
+            print(convert_to_voltage(read_adc(j)))
+            count += 1
+    except KeyboardInterrupt:
+        print("Exiting program")
+    finally:
+        GPIO.cleanup()
+
+if __name__ == "__main__":
+    main()
