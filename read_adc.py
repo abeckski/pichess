@@ -24,7 +24,7 @@ def convert_to_voltage(adc_value, vref=3.3):
 
 def main():
     try:
-        j = input("Which ADC input?")
+        j = int(input("Which ADC input?"))
         count=0
         while True:
             if count%2 == 0:
