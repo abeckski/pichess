@@ -14,7 +14,7 @@ spi.max_speed_hz = 1350000
 
 # Set GPIO output pins
 pins = [17, 27, 22, 23]
-sensor_mapping = [0,8,2,10,4,12,6,14,15,7,13,5,11,3,9,1]
+sensor_mapping = [0,8,4,12,2,10,6,14,15,7,11,3,13,5,9,1]
 letters = ["a", "b", "c", "d", "e", "f", "g", "h"]
 threshold = 0.1 #Volts
 
@@ -118,65 +118,72 @@ def find_move(old_position):
                 if new_position[r[j], c[j]] != 0:
                     move = letters[c[i]]+str(r[i]+1)+letters[c[j]]+str(r[j]+1)
                     if stockfish.is_move_correct(move):
-                        return move
+                        return move, new_position
     return
+
+def chess_game(skill_level, pvc, commentary, user_offset):
+    moves = []
+    colors = ["White","Black"]
+    stockfish.set_position(moves)
+    evalutation = stockfish.get_evaluation()
+    move_num = 0
+    position = starting_position
+    stockfish.set_skill_level(3*skill_level)
+    
+    while True: #Keep playing until there are no moves available
+        #make a move
+        #print(stockfish.get_board_visual(not bool(user_offset)))
+        while True:
+            if (move_num%2!=user_offset) & (pvc):
+                print("Stockfish says: " + random.choice(stockfish.get_top_moves(6 - skill_level)))
+                #moves.append(random.choice(stockfish.get_top_moves(3)))
+                
+            ### ADD WAIT FOR BUTTON PRESS ###
+
+            move, new_position = find_move(position)
+            if move is not None:
+                moves.append(move)
+                stockfish.set_position(moves)
+                position = new_position
+                break
+            #moves.append(input(colors[move_num%2] + 's turn to move, please input a legal move: '))
+            else:
+                print("That's not a legal move you dunce. Try again")
+
+        new_eval = stockfish.get_evaluation()
+        if commentary and not ((move_num%2!=user_offset) & (pvc)):
+            evaluate_move(evalutation, new_eval)
+            evalutation = new_eval
+        
+        if type(stockfish.get_best_move())!=type('string'):
+            print('GAME OVER')
+            if (new_eval['type'] == 'mate') & (move_num%2==0):
+                print('WHITE WINS!!!')
+            elif (new_eval['type'] == 'mate') & (move_num%2==1):
+                print('BLACK WINS!!!')
+            else:
+                print('STALEMATE :/')
+            #print(stockfish.get_board_visual(not bool(user_offset)))
+            return
+        else:
+            move_num += 1
+
 
 def main():
     try:
-        pvc = input_to_bool(input("Play vs Computer? (y/n): "))
-        user_offset = 0
+        while True:
+            pvc = input_to_bool(input("Play vs Computer? (y/n): "))
+            user_offset = 0
 
-        if pvc:
-            stockfish.set_elo_rating(int(input("Input Stockfish ELO: ")))
-            user_input = input("Play as White or Black? (w/b): ")
-            if (user_input == 'b') | (user_input == 'B'):
-                user_offset = 1
-        commentary = input_to_bool(input("Can I judge your moves? (y/n):"))
-        moves = []
-        colors = ["White","Black"]
-        stockfish.set_position(moves)
-        evalutation = stockfish.get_evaluation()
-        move_num = 0
-        position = starting_position
+            if pvc:
+                stockfish.set_elo_rating(int(input("Input Stockfish ELO: ")))
+                user_input = input("Play as White or Black? (w/b): ")
+                if (user_input == 'b') | (user_input == 'B'):
+                    user_offset = 1
+            commentary = input_to_bool(input("Can I judge your moves? (y/n):"))
+
+            chess_game(skill_level, pvc, commentary, user_offset)
         
-        while True: #Keep playing until there are no moves available
-            #make a move
-            #print(stockfish.get_board_visual(not bool(user_offset)))
-            while True:
-                if (move_num%2!=user_offset) & (pvc):
-                    print("Stockfish says: " + stockfish.get_best_move())
-                    moves.append(random.choice(stockfish.get_top_moves(3)))
-                else:
-                    
-                    ### ADD WAIT FOR BUTTON PRESS ###
-
-                    move = find_move(position)
-                    if move is not None:
-                        moves.append(move)
-                        stockfish.set_position(moves)
-                        position = find_current_position()
-                        break
-                    #moves.append(input(colors[move_num%2] + 's turn to move, please input a legal move: '))
-                    else:
-                        print("That's not a legal move you dunce. Try again")
-
-            new_eval = stockfish.get_evaluation()
-            if commentary and not ((move_num%2!=user_offset) & (pvc)):
-                evaluate_move(evalutation, new_eval)
-                evalutation = new_eval
-            
-            if type(stockfish.get_best_move())!=type('string'):
-                print('GAME OVER')
-                if (new_eval['type'] == 'mate') & (move_num%2==0):
-                    print('WHITE WINS!!!')
-                elif (new_eval['type'] == 'mate') & (move_num%2==1):
-                    print('BLACK WINS!!!')
-                else:
-                    print('STALEMATE :/')
-                print(stockfish.get_board_visual(not bool(user_offset)))
-                return
-            else:
-                move_num += 1
     except KeyboardInterrupt:
         print("Exiting program")
     finally:
