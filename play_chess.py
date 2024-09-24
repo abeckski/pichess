@@ -22,11 +22,13 @@ threshold = 0.1 #Volts
 GPIO.setmode(GPIO.BCM)
 for pin in pins:
     GPIO.setup(pin, GPIO.OUT)
+GPIO.setup(5, GPIO.IN)
+GPIO.setup(6, GPIO.IN)
 
 # Initialize LCD
 LCD2004.init(0x27, 1)	# init(slave address, background light)
 
-# Start a stockfish game
+# Start a stockfish instance
 stockfish = Stockfish("/usr/games/stockfish", depth=8)
 
 starting_position = np.array([[-1,-1,-1,-1,-1,-1,-1,-1],
@@ -37,6 +39,15 @@ starting_position = np.array([[-1,-1,-1,-1,-1,-1,-1,-1],
                              [ 0, 0, 0, 0, 0, 0, 0, 0],
                              [ 1, 1, 1, 1, 1, 1, 1, 1],
                              [ 1, 1, 1, 1, 1, 1, 1, 1]])
+user_indicators = ["Press when finished with move        -->", "<-- Press when done with move"]
+
+def button_press():
+    while True:
+        if GPIO.input(5):
+            return 0
+        elif GPIO.input(6):
+            return 1
+        time.sleep(0.25)
 
 def lcd_display(message, row=0):
     if type(message) is not type('e'): 
@@ -110,6 +121,8 @@ def find_current_position():
 def find_move(old_position):
     '''Determine the only legal move based on the current and previous position'''
     new_position = find_current_position()
+    if new_position == starting_position:
+        return 'restart', new_position
     diff = old_position - new_position
     r, c = np.nonzero(diff)
     for i in range(len(c)):
@@ -122,6 +135,7 @@ def find_move(old_position):
     return
 
 def chess_game(skill_level, pvc, commentary, user_offset):
+    '''Play a game of chess, return when finished'''
     moves = []
     colors = ["White","Black"]
     stockfish.set_position(moves)
@@ -129,58 +143,98 @@ def chess_game(skill_level, pvc, commentary, user_offset):
     move_num = 0
     position = starting_position
     stockfish.set_skill_level(3*skill_level)
+    lcd_display(colors[0] + 's Turn!')
+    lcd_display(user_indicators[0], 2)
     
     while True: #Keep playing until there are no moves available
-        #make a move
-        #print(stockfish.get_board_visual(not bool(user_offset)))
-        while True:
-            if (move_num%2!=user_offset) & (pvc):
-                print("Stockfish says: " + random.choice(stockfish.get_top_moves(6 - skill_level)))
-                #moves.append(random.choice(stockfish.get_top_moves(3)))
+        #Display the computer's choice move if necessary
+        if (move_num%2!=user_offset) & (pvc):
+            lcd_display("Computer says:  " + random.choice(stockfish.get_top_moves(6 - skill_level)))
+
+        while True: # Keep trying until User makes a legal move
                 
-            ### ADD WAIT FOR BUTTON PRESS ###
+            ### WAIT FOR BUTTON PRESS ###
+            while move_num%2 != button_press():
+                time.sleep(0.1)
 
             move, new_position = find_move(position)
             if move is not None:
+                if move == 'restart':
+                    return #End the game if the user sets pieces back to starting position
                 moves.append(move)
                 stockfish.set_position(moves)
                 position = new_position
                 break
             #moves.append(input(colors[move_num%2] + 's turn to move, please input a legal move: '))
             else:
-                print("That's not a legal move you dunce. Try again")
-
-        new_eval = stockfish.get_evaluation()
-        if commentary and not ((move_num%2!=user_offset) & (pvc)):
-            evaluate_move(evalutation, new_eval)
-            evalutation = new_eval
+                lcd_display("That's not a legal move you dunce. Try again")
         
+        LCD2004.clear()
+        # Check if the game is over
         if type(stockfish.get_best_move())!=type('string'):
-            print('GAME OVER')
+            lcd_display('GAME OVER')
             if (new_eval['type'] == 'mate') & (move_num%2==0):
-                print('WHITE WINS!!!')
+                lcd_display('WHITE WINS!!!', 2)
             elif (new_eval['type'] == 'mate') & (move_num%2==1):
-                print('BLACK WINS!!!')
+                lcd_display('BLACK WINS!!!', 2)
             else:
-                print('STALEMATE :/')
-            #print(stockfish.get_board_visual(not bool(user_offset)))
+                lcd_display('STALEMATE :/', 2)
+            time.sleep(5)
             return
         else:
             move_num += 1
+
+        # Reset the LCD display either with an evaluation of the previous move, or an indication
+        # of whose turn it is
+        lcd_display(user_indicators[move_num%2], 2)
+        new_eval = stockfish.get_evaluation()
+        if commentary and not ((move_num%2!=user_offset) & (pvc)) and move_num>3: #crazy logic statement lol
+            evaluate_move(evalutation, new_eval)
+        else:
+            lcd_display(colors[move_num%2] + 's Turn!')
+        evalutation = new_eval
+        
 
 
 def main():
     try:
         while True:
-            pvc = input_to_bool(input("Play vs Computer? (y/n): "))
+            LCD2004.clear()
+            lcd_display("Welcome to Pichess!!")
+            lcd_display("Play vs Computer?", 1)
+            lcd_display("<-- Yes      No -->", 2)
+            pvc = button_press() #Player vs Computer Boolean
+            LCD2004.clear()
             user_offset = 0
+            skill_level = 0
 
             if pvc:
-                stockfish.set_elo_rating(int(input("Input Stockfish ELO: ")))
-                user_input = input("Play as White or Black? (w/b): ")
-                if (user_input == 'b') | (user_input == 'B'):
-                    user_offset = 1
-            commentary = input_to_bool(input("Can I judge your moves? (y/n):"))
+                lcd_display("A Good or a Bad     Computer?")
+                lcd_display("<-- Good     Bad -->", 2)
+                if button_press():
+                    LCD2004.clear()
+                    lcd_display("How Good?")
+                    lcd_display("<-- Expert  Hard -->", 2)
+                    if button_press():
+                        skill_level = 5
+                    else: skill_level = 3
+                else:
+                    LCD2004.clear()
+                    lcd_display("How Bad?")
+                    lcd_display("<-- Intermediate            Beginner -->", 2)
+                    if button_press():
+                        skill_level = 1
+                    else: skill_level = 0
+                LCD2004.clear()
+                lcd_display("Play as White or    Black?")
+                lcd_display("<-- Black  White -->", 2)
+                user_offset = button_press()
+
+            LCD2004.clear()
+            lcd_display("Can I judge your    moves??")
+            lcd_display("<-- Yes      No -->", 2)
+            commentary = button_press()
+            LCD2004.clear()
 
             chess_game(skill_level, pvc, commentary, user_offset)
         
