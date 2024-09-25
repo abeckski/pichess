@@ -105,7 +105,7 @@ def find_current_position():
     
     # Set the GPIO pins to choose the multiplexer input
     for i in range(16):
-        pin_values = binary(sensor_mapping(i))
+        pin_values = binary(sensor_mapping[i])
         for p, pin in enumerate(pins):
             if pin_values[p]:
                 GPIO.output(pin, GPIO.HIGH)
