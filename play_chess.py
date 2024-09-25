@@ -121,7 +121,7 @@ def find_current_position():
 def find_move(old_position):
     '''Determine the only legal move based on the current and previous position'''
     new_position = find_current_position()
-    if new_position == starting_position:
+    if np.array_equal(new_position, starting_position):
         return 'restart', new_position
     diff = old_position - new_position
     r, c = np.nonzero(diff)
@@ -129,7 +129,7 @@ def find_move(old_position):
         if new_position[r[i], c[i]] == 0:
             for j in range(len(c)):
                 if new_position[r[j], c[j]] != 0:
-                    move = letters[c[i]]+str(r[i]+1)+letters[c[j]]+str(r[j]+1)
+                    move = letters[c[i]]+str(8-r[i])+letters[c[j]]+str(8-r[j])
                     if stockfish.is_move_correct(move):
                         return move, new_position
     return
