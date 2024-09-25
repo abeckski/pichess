@@ -123,8 +123,19 @@ def find_move(old_position):
     new_position = find_current_position()
     if np.array_equal(new_position, starting_position):
         return 'restart', new_position
+    
+    # Find the squares which have changed state since the last move
     diff = old_position - new_position
-    r, c = np.nonzero(diff)
+
+    # Castling totally breaks my system for finding moves so check for that first 
+    if sum(sum(abs(diff))) > 3: # Castling causes more squares to change state than any other move
+        if stockfish.is_move_correct('e1g1'): return 'e1g1', new_position
+        elif stockfish.is_move_correct('e1c1'): return 'e1c1', new_position
+        elif stockfish.is_move_correct('e8g8'): return 'e8g8', new_position
+        elif stockfish.is_move_correct('e8c8'): return 'e8c8', new_position
+        else: return None, None
+    r, c = np.nonzero(diff) # indices of all the squares which have changed state
+    # This would be one line of code if it weren't for en passant...
     for i in range(len(c)):
         if new_position[r[i], c[i]] == 0:
             for j in range(len(c)):
@@ -132,7 +143,7 @@ def find_move(old_position):
                     move = letters[c[i]]+str(8-r[i])+letters[c[j]]+str(8-r[j])
                     if stockfish.is_move_correct(move):
                         return move, new_position
-    return
+    return None, None
 
 def chess_game(skill_level, pvc, commentary, user_offset):
     '''Play a game of chess, return when finished'''
@@ -165,7 +176,7 @@ def chess_game(skill_level, pvc, commentary, user_offset):
                 stockfish.set_position(moves)
                 position = new_position
                 break
-            #moves.append(input(colors[move_num%2] + 's turn to move, please input a legal move: '))
+            
             else:
                 lcd_display("That's not a legal move you dunce. Try again")
         
