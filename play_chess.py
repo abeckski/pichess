@@ -16,7 +16,7 @@ spi.max_speed_hz = 1350000
 pins = [17, 27, 22, 23]
 sensor_mapping = [0,8,4,12,2,10,6,14,15,7,11,3,13,5,9,1]
 letters = ["a", "b", "c", "d", "e", "f", "g", "h"]
-threshold = 0.1 #Volts
+threshold = 0.2 #Volts
 
 #Setup GPIO pins
 GPIO.setmode(GPIO.BCM)
