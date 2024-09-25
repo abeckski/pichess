@@ -11,7 +11,7 @@ pin = int(input("which pin? (5 or 6): "))
 try:
     while True:
          print(GPIO.input(pin))
-         time.sleep(0.25)
+         time.sleep(0.1)
 
 except KeyboardInterrupt:
         print("Exiting program")
