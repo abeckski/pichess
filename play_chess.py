@@ -126,7 +126,6 @@ def find_move(old_position):
     
     # Find the squares which have changed state since the last move
     diff = old_position - new_position
-
     # Castling totally breaks my system for finding moves so check for that first 
     if sum(sum(abs(diff))) > 3: # Castling causes more squares to change state than any other move
         if stockfish.is_move_correct('e1g1'): return 'e1g1', new_position
