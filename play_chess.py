@@ -47,7 +47,7 @@ def button_press():
             return 0
         elif GPIO.input(6):
             return 1
-        time.sleep(0.25)
+        time.sleep(0.1)
 
 def lcd_display(message, row=0):
     if type(message) is not type('e'): 
@@ -160,7 +160,7 @@ def chess_game(skill_level, pvc, commentary, user_offset):
     while True: #Keep playing until there are no moves available
         #Display the computer's choice move if necessary
         if (move_num%2!=user_offset) & (pvc):
-            lcd_display("Computer says:  " + random.choice(stockfish.get_top_moves(6 - skill_level)))
+            lcd_display("Computer says:  " + random.choice(stockfish.get_top_moves(6 - skill_level))['Move'])
 
         while True: # Keep trying until User makes a legal move
                 
