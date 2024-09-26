@@ -20,7 +20,7 @@ def lcd_display(message, row=0):
         i += 1
     len_remaining = len(message) - i*20
     if len_remaining > 0:
-        LCD2004.write(int((20-len_remaining)/2), i+1+row, message[i*20:])
+        LCD2004.write(int((20-len_remaining)/2), i+row, message[i*20:])
 
 def destroy():
 	LCD2004.clear()
