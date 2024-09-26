@@ -40,6 +40,7 @@ starting_position = np.array([[-1,-1,-1,-1,-1,-1,-1,-1],
                              [ 1, 1, 1, 1, 1, 1, 1, 1],
                              [ 1, 1, 1, 1, 1, 1, 1, 1]])
 user_indicators = ["Press when finished with move        -->", "<-- Press when done with move"]
+indicators = ["                -->", "<--"]
 
 def button_press():
     while True:
@@ -196,9 +197,11 @@ def chess_game(skill_level, pvc, commentary, user_offset):
 
         # Reset the LCD display either with an evaluation of the previous move, or an indication
         # of whose turn it is
-        lcd_display(user_indicators[move_num%2], 2)
+        if move_num < 4:
+            lcd_display(user_indicators[move_num%2], 2)
+        else: lcd_display(indicators[move_num%2], 3)
         new_eval = stockfish.get_evaluation()
-        if commentary and not ((move_num%2!=user_offset) & (pvc)) and move_num>3: #crazy logic statement lol
+        if commentary and not ((move_num%2==user_offset) & (pvc)) and move_num>3: #crazy logic statement lol
             evaluate_move(evalutation, new_eval)
         else:
             lcd_display(colors[move_num%2] + 's Turn!')
