@@ -27,6 +27,7 @@ def destroy():
 
 if __name__ == "__main__":
 	try:
+		LCD2004.init(0x27, 1)	# init(slave address, background light)
 		while True:
 			LCD2004.clear()
 			message = input("Message?: ")
