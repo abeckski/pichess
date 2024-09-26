@@ -40,7 +40,7 @@ starting_position = np.array([[-1,-1,-1,-1,-1,-1,-1,-1],
                              [ 1, 1, 1, 1, 1, 1, 1, 1],
                              [ 1, 1, 1, 1, 1, 1, 1, 1]])
 user_indicators = ["Press when finished with move        -->", "<-- Press when done with move"]
-indicators = ["                -->", "<--"]
+indicators = ["                -->", "<--                "]
 
 def button_press():
     while True:
@@ -160,7 +160,8 @@ def chess_game(skill_level, pvc, commentary, user_offset):
     while True: #Keep playing until there are no moves available
         #Display the computer's choice move if necessary
         if (move_num%2!=user_offset) & (pvc):
-            lcd_display("Computer says:  " + random.choice(stockfish.get_top_moves(6 - skill_level))['Move'])
+            row = 2 if move_num > 3 else 0
+            lcd_display("Computer says:  " + random.choice(stockfish.get_top_moves(6 - skill_level))['Move'], row)
 
         while True: # Keep trying until User makes a legal move
                 
