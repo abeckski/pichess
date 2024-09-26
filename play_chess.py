@@ -60,7 +60,7 @@ def lcd_display(message, row=0):
         i += 1
     len_remaining = len(message) - i*20
     if len_remaining > 0:
-        LCD2004.write(int((20-len_remaining)/2), i+1+row, message[i*20:])
+        LCD2004.write(int((20-len_remaining)/2), i+row, message[i*20:])
 
 def evaluate_move(old_eval, new_eval):
     '''Print a roast or a compliment depending on how stockfish likes your move'''
@@ -178,7 +178,7 @@ def chess_game(skill_level, pvc, commentary, user_offset):
                 break
             
             else:
-                lcd_display("That's not a legal move you dunce. Try again")
+                lcd_display("That's not a legal  move you dunce.     Try again")
         
         LCD2004.clear()
         # Check if the game is over
