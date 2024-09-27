@@ -127,21 +127,21 @@ def find_move(old_position):
     
     # Find the squares which have changed state since the last move
     diff = old_position - new_position
+    r, c = np.nonzero(diff) # indices of all the squares which have changed state
+    zi = [] #zero indices
     # Castling totally breaks my system for finding moves so check for that first 
-    if sum(sum(abs(diff))) > 3: # Castling causes more squares to change state than any other move
+    if len(r) > 3: # Castling causes more squares to change state than any other move
         if stockfish.is_move_correct('e1g1'): return 'e1g1', new_position
         elif stockfish.is_move_correct('e1c1'): return 'e1c1', new_position
         elif stockfish.is_move_correct('e8g8'): return 'e8g8', new_position
         elif stockfish.is_move_correct('e8c8'): return 'e8c8', new_position
         else: return 'toomany', None #return toomany to indicate that too many pieces have moved and something is wrong
     
-    r, c = np.nonzero(diff) # indices of all the squares which have changed state
-    zi = [] #zero indices
     for i in range(len(r)):
         if new_position[r[i], c[i]] == 0:
             zi.append(i)
     # This would be one line of code if it weren't for en passant...
-    if sum(sum(abs(diff))) == 3: # If 3 squares changes, check for en passant
+    if len(r) == 3: # If 3 squares changes, check for en passant
         # Crazy logic statement, if true then the move CANNOT be en passant and must be illegal
         if len(zi)!=2 or (r[zi[0]] != r[zi[1]]) or ((r[zi[0]] != 3) and (r[zi[0]] != 4)):
             return 'toomany', None 
