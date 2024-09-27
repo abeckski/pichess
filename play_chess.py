@@ -133,9 +133,18 @@ def find_move(old_position):
         elif stockfish.is_move_correct('e1c1'): return 'e1c1', new_position
         elif stockfish.is_move_correct('e8g8'): return 'e8g8', new_position
         elif stockfish.is_move_correct('e8c8'): return 'e8c8', new_position
-        else: return None, None
+        else: return 'toomany', None #return toomany to indicate that too many pieces have moved and something is wrong
+    
     r, c = np.nonzero(diff) # indices of all the squares which have changed state
+    zi = [] #zero indices
+    for i in range(len(r)):
+        if new_position[r[i], c[i]] == 0:
+            zi.append(i)
     # This would be one line of code if it weren't for en passant...
+    if sum(sum(abs(diff))) == 3: # If 3 squares changes, check for en passant
+        # Crazy logic statement, if true then the move CANNOT be en passant and must be illegal
+        if len(zi)!=2 or (r[zi[0]] != r[zi[1]]) or ((r[zi[0]] != 3) and (r[zi[0]] != 4)):
+            return 'toomany', None 
     for i in range(len(c)):
         if new_position[r[i], c[i]] == 0:
             for j in range(len(c)):
@@ -143,6 +152,8 @@ def find_move(old_position):
                     move = letters[c[i]]+str(8-r[i])+letters[c[j]]+str(8-r[j])
                     if stockfish.is_move_correct(move):
                         return move, new_position
+                    if stockfish.is_move_correct(move+'q'):
+                        return move+'q', new_position
     return None, None
 
 def chess_game(skill_level, pvc, commentary, user_offset):
@@ -173,6 +184,9 @@ def chess_game(skill_level, pvc, commentary, user_offset):
             if move is not None:
                 if move == 'restart':
                     return #End the game if the user sets pieces back to starting position
+                if move == 'toomany': 
+                    lcd_display('Somethings up, too  many pieces moved.  Try again')
+                    continue
                 moves.append(move)
                 stockfish.set_position(moves)
                 position = new_position
