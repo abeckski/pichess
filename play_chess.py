@@ -131,10 +131,10 @@ def find_move(old_position):
     zi = [] #zero indices
     # Castling totally breaks my system for finding moves so check for that first 
     if len(r) > 3: # Castling causes more squares to change state than any other move
-        if stockfish.is_move_correct('e1g1'): return 'e1g1', new_position
-        elif stockfish.is_move_correct('e1c1'): return 'e1c1', new_position
-        elif stockfish.is_move_correct('e8g8'): return 'e8g8', new_position
-        elif stockfish.is_move_correct('e8c8'): return 'e8c8', new_position
+        if stockfish.is_move_correct('e1g1') and 7 in c: return 'e1g1', new_position
+        elif stockfish.is_move_correct('e1c1') and 0 in c: return 'e1c1', new_position
+        elif stockfish.is_move_correct('e8g8') and 7 in c: return 'e8g8', new_position
+        elif stockfish.is_move_correct('e8c8') and 0 in c: return 'e8c8', new_position
         else: return 'toomany', None #return toomany to indicate that too many pieces have moved and something is wrong
     
     for i in range(len(r)):
@@ -152,7 +152,7 @@ def find_move(old_position):
                     move = letters[c[i]]+str(8-r[i])+letters[c[j]]+str(8-r[j])
                     if stockfish.is_move_correct(move):
                         return move, new_position
-                    if stockfish.is_move_correct(move+'q'):
+                    if stockfish.is_move_correct(move+'q'): #If a pawn promotes to a queen
                         return move+'q', new_position
     return None, None
 
